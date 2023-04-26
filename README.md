@@ -12,7 +12,8 @@ __Year:__ 2023
 \* Please contact Alyssa T. Kullberg (alyssa.kullberg@gmail.com) with any questions regarding air temperature, soil temperature, or relative humidity data.
 
 
-## This repository contains datasets and scripts associated with Fortier et al. (2023), including:
+### This repository contains datasets and scripts associated with Fortier et al. (2023), including:
+
 
 ### Time-series air temperature, soil temperature, and relative humidity datasets
 * __Boiling_River_temp_RH_datasets_README.docx__
