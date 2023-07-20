@@ -29,4 +29,13 @@ __Year:__ 2023
 
 
 ### Tree diversity data and analyses from 70 3-m radius plots
-* __Coming soon!__
+* __Boiling_River_temp_RH_datasets_README.docx__
+* __Plot_chars.csv__
+* __BR_plot_data.xlsx__
+* __DETERMINACIONES BOTANICAS - RIO HIRVIENTE.xlsx__
+* __occ_clean_final.csv__
+* __BR Data analysis.R__ 
+   + load and clean plot characteristic and tree composition data
+   + characterize and calculate plot diversity, compare with plot temperature using linear models
+   + run ordinations to visualize how plot composition compares with temperature, run partial Mantel test to test air temperature effect on tree composition
+   + calculate thermal maxima for each species, calculate community temperature scores (CTS), compare plot CTS with air temperature using linear models 
