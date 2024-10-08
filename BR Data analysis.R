@@ -1,7 +1,7 @@
 ### Boiling River ###
 
 #Set working dir
-setwd("C:/Users/rxf568/OneDrive - University of Miami/Peru - Boiling River/Data analysis")
+setwd("C:/Users/rxf568/Dropbox/Peru - Boiling River/Data analysis")
 
 #load libraries
 library(readxl)
@@ -23,8 +23,7 @@ library(otuSummary)
 
 ### Input plot characteristics data
 plot_char <- read.csv("Plot_chars.csv")
-plot_char <- plot_char[,-c(1)]
-plot_char <- dplyr::rename(plot_char, air.temp = tms_clim15_Tmax)
+plot_char <- dplyr::rename(plot_char, air.temp = MAT)
 
 # Input soil data and match with plot_char
 soil <- read_excel("Soil_data_new.xlsx")
@@ -199,41 +198,41 @@ summary(lm(no_spp ~ Ca_available + K_available + P_available + Zn + Fe, data = p
 summary(lm(Shannon ~ Ca_available + K_available + P_available + Zn + Fe, data = plot_char))
 summary(lm(Simpson ~ Ca_available + K_available + P_available + Zn + Fe, data = plot_char))
 summary(lm(Inv.simp ~ Ca_available + K_available + P_available + Zn + Fe, data = plot_char))
-#No nutrient is significant. These results are in table S2.
+#No nutrient is significant. These results are in table S3.
 
-# Run the regressions using MTWM and MAT
-lm.sp.rich <- lm(no_spp ~ air.temp, data = plot_char) #MTWM
+# Run the regressions using MAT and MTWM
+lm.sp.rich <- lm(no_spp ~ air.temp, data = plot_char) #MAT
 summary(lm.sp.rich)
 tab_model(lm.sp.rich)
-lm.sp.rich.mat <- lm(no_spp ~ tms_clim15_MAT, data = plot_char)#MAT
-summary(lm.sp.rich.mat)
+lm.sp.rich.mtwm <- lm(no_spp ~ MTWM, data = plot_char) #MTWM
+summary(lm.sp.rich.mtwm)
 
-lm.Shannon <- lm(Shannon ~ air.temp, data = plot_char) #MTWM
+lm.Shannon <- lm(Shannon ~ air.temp, data = plot_char) #MAT
 summary(lm.Shannon)
 tab_model(lm.Shannon)
-lm.Shannon.mat <- lm(Shannon ~ tms_clim15_MAT, data = plot_char)#MAT
-summary(lm.Shannon.mat)
+lm.Shannon.mtwm <- lm(Shannon ~ MTWM, data = plot_char) #MTWM
+summary(lm.Shannon.mtwm)
 
-lm.Simp <- lm(Simpson ~ air.temp, data = plot_char) #MTWM
+lm.Simp <- lm(Simpson ~ air.temp, data = plot_char) #MAT
 summary(lm.Simp)
 tab_model(lm.Simp)
-lm.Simp.mat <- lm(Simpson ~ tms_clim15_MAT, data = plot_char)#MAT
-summary(lm.Simp.mat)
+lm.Simp.mtwm <- lm(Simpson ~ MTWM, data = plot_char) #MTWM
+summary(lm.Simp.mtwm)
 
-lm.Inv.simp <- lm(Inv.simp ~ air.temp, data = plot_char) #MTWM
+lm.Inv.simp <- lm(Inv.simp ~ air.temp, data = plot_char) #MAT
 summary(lm.Inv.simp)
 tab_model(lm.Inv.simp)
-lm.Inv.simp.mat <- lm(Inv.simp ~ tms_clim15_MAT, data = plot_char) #MAT
-summary(lm.Inv.simp.mat)
+lm.Inv.simp.mtwm <- lm(Inv.simp ~ MTWM, data = plot_char) #MTWM
+summary(lm.Inv.simp.mtwm)
 
 # plot Shannon index
 shannon_plot <- ggplot(data = plot_char, aes(x = air.temp, y = Shannon)) +
   geom_point(size=4, shape=21, fill="gray25", color="black", alpha=.6) +
   geom_smooth(method = "glm", formula = y ~ x, color = "black") +
-  scale_x_continuous(name="MTWM (°C)") +
+  scale_x_continuous(name="MAT (°C)", breaks = seq(24, 26.5, by = 1)) +
   scale_y_continuous(name="Shannon index (H')") +
   #geom_text(x=40, y=12.5, label="p < 0.001", size = 5) +
-  annotate("text", x=40, y=2.5, label= bquote("R"^2~" = 0.17, p < 0.001"), size = 14/.pt) +
+  annotate("text", x=25.5, y=2.5, label= bquote("R"^2~" = 0.16, p < 0.001"), size = 14/.pt) +
   theme_classic() +
   theme(axis.text = element_text(color="black", size = 14), 
         axis.title = element_text(size = 16),
@@ -245,15 +244,15 @@ shannon_plot
 ### do a nonlinear regression 
 library(minpack.lm)
 m <- lm(Shannon ~ poly(air.temp, 2) , data=plot_char)
-summary(m) # almost the same. We include this result in the review responses but not the manuscript
+summary(m) # almost the same. We do not include this result in the manuscript
 
 shannon_poly <- ggplot(data = plot_char, aes(x = air.temp, y = Shannon)) +
   geom_point(size=4, shape=21, fill="gray25", color="black", alpha=.6) +
   geom_smooth(method = lm, formula = y ~ poly(x, 2), color="black") +
   #geom_smooth(method = "glm", formula = m, color = "black") +
-  scale_x_continuous(name="MTWM (°C)") +
+  scale_x_continuous(name="MAT (°C)", breaks = seq(24, 26.5, by = 1)) +
   scale_y_continuous(name="Shannon index (H')") +
-  annotate("text", x=40, y=2.5, label= bquote("R"^2~" = 0.18, p < 0.001"), size = 14/.pt) +
+  annotate("text", x=25.5, y=2.5, label= bquote("R"^2~" = 0.17, p < 0.001"), size = 14/.pt) +
   theme_classic() +
   theme(axis.text = element_text(color="black", size = 14), 
         axis.title = element_text(size = 16),
@@ -269,31 +268,31 @@ density <- density %>%
 plot_char <- left_join(plot_char, density)
 plot_char$evenness <- (plot_char$Shannon)/(log(plot_char$no_spp))
 
-plot_div_new <- plot_char[,c(1,26,30,31)]
+plot_div_new <- plot_char[,c(1,25,29,30)] #columns are no.spp, evenness, and density
 plot_div_new$air.temp <- plot_char$air.temp
 plot_div_new <- gather(plot_div_new, key="Metric", value = "value", c("no_spp", "density", "evenness"))
 
 # Run a couple lms on MTWM with evenness and density 
 summary(lm(evenness ~ air.temp, plot_char)) # no effect
-summary(lm(density ~ air.temp, plot_char)) # marginally significant effect
+summary(lm(density ~ air.temp, plot_char)) # significant effect but R2 of 0.06
 
 #add some text data and dummy data to annotate facets and change the scale on density facet
-facet_text <- data.frame(label = c("R2=0.15, p=0.001", "R2=0.04, p=0.1", "R2=0.05, p=0.06"), 
+facet_text <- data.frame(label = c("R2=0.16, p<0.001", "R2=0.03, p=0.17", "R2=0.06, p<0.05"), 
                          Metric = c("no_spp", "evenness", "density"),
-                         x = c(40, 40, 39),
-                         y = c(13.5, 0.8, 17))
+                         x = c(25.5, 25.5, 25.5),
+                         y = c(13.5, 0.8, 17.5))
 
 dummy <- data.frame(air.temp = min(plot_div_new$air.temp), value = 18, Metric = "density")
 
 div_plot <- ggplot(data = plot_div_new, aes(x = air.temp, y = value, color = Metric)) +
   geom_point() +
   geom_smooth(method = "glm", formula = y ~ x, color="black") +
-  scale_x_continuous(name="MTWM (°C)") +
+  scale_x_continuous(name="MAT (°C)", breaks = seq(24, 26.5, by = 1)) +
   facet_wrap(~fct_rev(Metric), ncol=1, scales = "free", strip.position = "right", labeller = as_labeller(c(no_spp="Species richness", density="# of individuals", evenness="Evenness"))) +
   scale_color_manual(values=c("orangered", "steelblue", "darkgreen")) +
   ylab(NULL) +
   theme_classic() +
-  geom_text(data = facet_text, color="black",  mapping = aes(x = x, y = y, label= label)) +
+  geom_text(data = facet_text, color="black", size = 3.5, mapping = aes(x = x, y = y, label= label)) +
   geom_blank(data = dummy) +
   theme(axis.text = element_text(color="black", size = 12), 
         axis.title = element_text(size = 14),
@@ -359,25 +358,24 @@ density_small <- density_small %>%
 plot_char_small <- left_join(plot_char_small, density_small)
 plot_char_small$evenness <- (plot_char_small$Shannon)/(log(plot_char_small$no_spp))
 
-plot_div_new_small <- plot_char_small[,c(1,26:31)]
+plot_div_new_small <- plot_char_small[,c(1,25:30)]
 plot_div_new_small$air.temp <- plot_char_small$air.temp
 plot_div_new_small <- gather(plot_div_new_small, key="Metric", value = "value", c("no_spp", "density", "evenness"))
 plot_div_new_small <- plot_div_new_small[-c(67,137,207),] #removes plot 67 with a Shannon value of 0 (two trees both C. argenteum)
 plot_char_small <- plot_char_small[-c(67),]
 
 #do the linear regressions for small stems using MTWM and MAT as main effects
-summary(lm(Shannon ~ air.temp, data = plot_char_small)) #significant decrease
-summary(lm(Shannon ~ tms_clim15_MAT, data = plot_char_small)) #significant decrease
-
 summary(lm(no_spp ~ air.temp, data = plot_char_small)) #significant decrease
-summary(lm(no_spp ~ tms_clim15_MAT, data = plot_char_small)) #significant decrease
+summary(lm(no_spp ~ MTWM, data = plot_char_small)) #significant decrease
+
+summary(lm(Shannon ~ air.temp, data = plot_char_small)) #significant decrease
+summary(lm(Shannon ~ MTWM, data = plot_char_small)) #significant decrease
 
 summary(lm(Simpson ~ air.temp, data = plot_char_small)) #significant decrease
-summary(lm(Simpson ~ tms_clim15_MAT, data = plot_char_small)) #significant decrease
+summary(lm(Simpson ~ MTWM, data = plot_char_small)) #significant decrease
 
 summary(lm(inv.simp ~ air.temp, data = plot_char_small)) #significant decrease
-summary(lm(inv.simp ~ tms_clim15_MAT, data = plot_char_small)) #significant decrease
-
+summary(lm(inv.simp ~ MTWM, data = plot_char_small)) #significant decrease
 
 summary(lm(density ~ air.temp, data = plot_char_small)) #no effect
 summary(lm(evenness ~ air.temp, data = plot_char_small)) #no effect
@@ -386,9 +384,9 @@ summary(lm(evenness ~ air.temp, data = plot_char_small)) #no effect
 shannon_plot_small <- ggplot(data = plot_char_small, aes(x = air.temp, y = Shannon)) +
   geom_point(size=4, shape=21, fill="gray25", color="black", alpha=.6) +
   geom_smooth(method = "glm", formula = y ~ x, color = "black") +
-  scale_x_continuous(name="MTWM (°C)") +
+  scale_x_continuous(name="MAT (°C)", breaks = seq(24, 26.5, by = 1)) +
   scale_y_continuous(name="Shannon index (H')") +
-  annotate("text", x=40, y=2.3, label= bquote("R"^2~" = 0.10, p < 0.01"), size = 14/.pt) +
+  annotate("text", x=25.5, y=2.3, label= bquote("R"^2~" = 0.10, p < 0.01"), size = 14/.pt) +
   theme_classic() +
   theme(axis.text = element_text(color="black", size = 14), 
         axis.title = element_text(size = 16),
@@ -399,22 +397,22 @@ shannon_plot_small
 
 
 #add some text data and dummy data to annotate facets and change the scale on density facet
-facet_text_small <- data.frame(label = c("R2=0.08, p=0.02", "R2=0.02, p=0.27", "R2=0.03, p=0.18"), 
+facet_text_small <- data.frame(label = c("R2=0.09, p=0.01", "R2=0.01, p=0.40", "R2=0.03, p=0.14"), 
                          Metric = c("no_spp", "evenness", "density"),
-                         x = c(39.5, 40, 39),
-                         y = c(11.5, 0.8, 16.5))
+                         x = c(25.5, 25.5, 25.5),
+                         y = c(11, 0.8, 16.5))
 
 dummy_small <- data.frame(air.temp = min(plot_div_new$air.temp), value = 18, Metric = "density")
 
 div_plot_small <- ggplot(data = plot_div_new_small, aes(x = air.temp, y = value, color = Metric)) +
   geom_point() +
   geom_smooth(method = "glm", formula = y ~ x, color="black") +
-  scale_x_continuous(name="MTWM (°C)") +
+  scale_x_continuous(name="MAT (°C)", breaks = seq(24, 26.5, by = 1)) +
   facet_wrap(~fct_rev(Metric), ncol=1, scales = "free", strip.position = "right", labeller = as_labeller(c(no_spp="Species richness", density="# of individuals", evenness="Evenness"))) +
   scale_color_manual(values=c("orangered", "steelblue", "darkgreen")) +
   ylab(NULL) +
   theme_classic() +
-  geom_text(data = facet_text_small, color="black",  mapping = aes(x = x, y = y, label= label)) +
+  geom_text(data = facet_text_small, color="black", size = 3.5,  mapping = aes(x = x, y = y, label= label)) +
   geom_blank(data = dummy_small) +
   theme(axis.text = element_text(color="black", size = 12), 
         axis.title = element_text(size = 14),
@@ -429,7 +427,7 @@ div_plot_small
 lay <- rbind(c(1,1,2),
              c(1,1,2))
 div_fig_small <- grid.arrange(shannon_plot_small, div_plot_small, layout_matrix = lay)
-#ggsave("diversity_plot.pdf",div_fig)
+#ggsave("suppdivfig.pdf", div_fig_small)
 
 
 #####
@@ -446,7 +444,7 @@ rm(plotBA)
 
 plot.o <- order(plot_char$air.temp) #order of plots by temperature
 
-trees <- comp # choose which dataset to use (small trees are in the df comp_small)
+trees <- comp_small # choose which dataset to use (small trees are in the df comp_small)
 m <- match(trees$Plot, plot_char$Plot[plot.o[1:25]]) #find trees in either coldest or hottest 25 plots
 w.cold=which(!is.na(m))
 m=match(trees$Plot, plot_char$Plot[plot.o[46:70]])
@@ -496,32 +494,32 @@ beta.div <- beta.multi(plot_mat_pa, index.family="sorensen")
 beta.div
 #most of the beta diversity is coming from turnover, not nestedness.
 
-#calculate and plot each pairwise combo of bet-SOR and delta-MTWM
+#calculate and plot each pairwise combo of bet-SOR and delta-MAT
 beta.div <- beta.pair(plot_mat_pa, index.family="sorensen")
 beta.sor <- beta.div[["beta.sor"]] #keeps only b-SOR
-delta.mtwm <- dist(plot_char$air.temp) #distance matrix of MTWM differences
+delta.mat <- dist(plot_char$air.temp) #distance matrix of MAT differences
 
 #combine both distance matrices into a dataframe
 beta.dif <- matrixConvert(beta.sor, colname=c("Var1","Var2","beta")) 
-mtwm.dif <- matrixConvert(delta.mtwm, colname=c("Var1","Var2","value"))
-beta.mtwm.dif <- cbind(beta.dif, mtwm.dif)
-beta.mtwm.dif <- beta.mtwm.dif[,-c(4,5)]
-beta.mtwm.dif <- beta.mtwm.dif[order(beta.mtwm.dif$Var1, beta.mtwm.dif$Var2),]
+mat.dif <- matrixConvert(delta.mat, colname=c("Var1","Var2","value"))
+beta.mat.dif <- cbind(beta.dif, mat.dif)
+beta.mat.dif <- beta.mat.dif[,-c(4,5)]
+beta.mat.dif <- beta.mat.dif[order(beta.mat.dif$Var1, beta.mat.dif$Var2),]
 
 #calculate mean temp between each plot pair to color code the next figure
-mean.mtwm.pairs <- plot_char %>%
+mean.mat.pairs <- plot_char %>%
     summarise(Plot = combn(Plot, 2, paste0, collapse = '-'), 
     mean.temp = combn(air.temp, 2, mean))
 
 #combine dfs
-beta.mtwm.dif$mean.temp <- mean.mtwm.pairs$mean.temp
+beta.mat.dif$mean.temp <- mean.mat.pairs$mean.temp
 
-ggplot(data = beta.mtwm.dif, aes(x = value, y = beta, fill=mean.temp)) +
-  geom_jitter(data=subset(beta.mtwm.dif, beta=1), size=2, shape=21, color="black", alpha=.8, width = 0.01, height= 0.01) +
+beta_sor_fig <- ggplot(data = beta.mat.dif, aes(x = value, y = beta, fill=mean.temp)) +
+  geom_jitter(data=subset(beta.mat.dif, beta=1), size=2, shape=21, color="black", alpha=.8, width = 0.01, height= 0.01) +
   geom_smooth(method = "lm", formula = y ~ x, color="black") +
   scale_fill_continuous(low = "yellow", high = "red") +
-  labs(fill = "Mean MTWM (°C)") +
-  scale_x_continuous(name="\u0394 MTWM (°C)") +
+  labs(fill = "Mean MAT (°C)") +
+  scale_x_continuous(name="\u0394 MAT (°C)") +
   scale_y_continuous(name="Beta-SOR") +
   theme_classic() +
   theme(axis.text = element_text(color="black", size = 14), 
@@ -531,17 +529,20 @@ ggplot(data = beta.mtwm.dif, aes(x = value, y = beta, fill=mean.temp)) +
         panel.border = element_rect(fill=NA),
         panel.background = element_rect(fill='transparent'),
         plot.background = element_rect(fill='transparent', color=NA))  
+beta_sor_fig
+
+#ggsave("betaSOR x delta.pdf", beta_sor_fig)
 
 ## make two more panels with beta-SIM and beta-SNE against delta MTWM
 beta.sim <- beta.div[["beta.sim"]]
 beta.sne <- beta.div[["beta.sne"]]
 
 sim.dif <- matrixConvert(beta.sim, colname=c("Var1","Var2","beta")) 
-sim.dif <- cbind(sim.dif, mtwm.dif)
+sim.dif <- cbind(sim.dif, mat.dif)
 sim.dif$metric <- "beta.sim"
 
 sne.dif <- matrixConvert(beta.sne, colname=c("Var1","Var2","beta")) 
-sne.dif <- cbind(sne.dif, mtwm.dif)
+sne.dif <- cbind(sne.dif, mat.dif)
 sne.dif$metric <- "beta.sne"
 
 sim.sne.dif <- rbind(sim.dif, sne.dif)
@@ -580,7 +581,7 @@ ggplot(data=comp, aes(x=DBH)) +
   geom_histogram(color="black", fill="white", binwidth=2) +
   scale_x_continuous(n.breaks = 10, name="Diameter at breast height (cm)") +
   scale_y_continuous(name="Count") +
-  geom_vline(xintercept = mean(comp$DBH), linetype="dashed", color="blue2", size=1) +
+  geom_vline(xintercept = mean(comp$DBH), linetype="dashed", color="blue2", linewidth=1) +
   theme_classic() +
   theme(axis.text = element_text(color="black", size = 14), 
         axis.title = element_text(size = 16),
@@ -590,6 +591,11 @@ ggplot(data=comp, aes(x=DBH)) +
 
 
 ### Composition with NMDS ###
+#first convert aspect to northness by calculating the cosine of the aspect
+plot_char$Aspect <- as.numeric(plot_char$Aspect)
+plot_char$Northness <- cos(plot_char$Aspect)
+plot_char$Eastness <- sin(plot_char$Aspect)
+
 #Make a function to produce a scree plot for different dimensions of the NMDS
 NMDS.scree <- function(x) { #where x is the name of the data frame variable
   plot(rep(1, 10), replicate(10, metaMDS(x, autotransform = F, k = 1)$stress), xlim = c(1, 10),ylim = c(0, 0.30), xlab = "# of Dimensions", ylab = "Stress", main = "NMDS scree plot")
@@ -624,11 +630,11 @@ ggplot(NMDSscores, aes(x = NMDS1, y = NMDS2, label = Plot)) +
   scale_color_continuous(low = "yellow", high = "red") +
   labs(color = "Air temperature (C)")
 
-en <- envfit(NMDS, plot_char[, c(3:4,22)], permutations = 999)
+en <- envfit(NMDS, plot_char[, c(3,22,33,34)], permutations = 999)
 head(en)
 env.scores <- as.data.frame(scores(en, display = "vectors"))
 env.scores <- cbind(env.scores, env.variables = rownames(env.scores))
-env.scores[3,3] <- "Air temperature"
+env.scores[2,3] <- "Air temperature"
 
 # radial shift function
 rshift = function(r, theta, a=0.03, b=0.07) {
@@ -643,17 +649,17 @@ env.scores = env.scores %>%
          xnew = rnew*cos(theta),
          ynew = rnew*sin(theta))
 
-env.scores[3,8] <- -0.015 # slightly changes the position of the Air temp label in the following plot
+env.scores[2,8] <- -0.015 # slightly changes the position of the Air temp label in the following plot
 
 
 ggplot(NMDSscores, aes(x = NMDS1, y = NMDS2)) +
   geom_hline(yintercept=0, linetype="dashed", color = "gray25") +
   geom_vline(xintercept=0, linetype="dashed", color = "gray25") +
   geom_point(shape = 16, size = 5,  aes(color = air.temp)) +
-  geom_segment(data = env.scores, aes(x = 0, xend = 1*NMDS1, y = 0, yend = 1*NMDS2), lineend = "round", arrow = arrow(length = unit(0.25, "cm")), color = "black", size = 1) +
+  geom_segment(data = env.scores, aes(x = 0, xend = 1*NMDS1, y = 0, yend = 1*NMDS2), lineend = "round", arrow = arrow(length = unit(0.25, "cm")), color = "black", linewidth = 1) +
   geom_text(data = env.scores, aes(x = xnew, y = ynew, label=env.variables), size = 4.5) +
-  scale_color_continuous(low = "yellow", high = "red") +
-  labs(color = "MTWM (°C)") +
+  scale_color_continuous(low = "yellow", high = "red", breaks = seq(24, 26.5, by = 1)) +
+  labs(color = "MAT (°C)") +
   theme_classic() +
   theme(axis.text = element_text(color = "black", size = 14), 
         axis.title = element_text(size = 16),
@@ -679,6 +685,7 @@ plot(NMDSscores$air.temp,NMDSscores$NMDS1)
 # important properties that shape composition in the neotropics (John et al. 2007, Condit et al. 2013)
 
 #another species matrix only with plots with soil nutrients
+plot_char_soil <- subset(plot_char, !is.na(plot_char$Ca_available))
 plot_mat_soil <- acast(comp[comp$Plot %in% plot_char_soil$Plot,], Plot ~ Binomial, value.var="Plot") 
 plot_mat_soil <- plot_mat_soil[-c(22),]
 
@@ -694,16 +701,16 @@ ggplot(NMDSscores, aes(x = NMDS1, y = NMDS2, label = Plot)) +
   #geom_text() +
   theme_classic() +
   scale_color_continuous(low = "yellow", high = "red") +
-  labs(color = "Air temperature (C)")
+  labs(color = "MAT (C)")
 
-en <- envfit(NMDS, plot_char_soil[-c(22), c(3:4,11,13,17:18,21:22)], permutations = 999)
+en <- envfit(NMDS, plot_char_soil[-c(22), c(3,11,13,17:18,21:22, 33,34)], permutations = 999)
 head(en)
 env.scores <- as.data.frame(scores(en, display = "vectors"))
 env.scores <- cbind(env.scores, env.variables = rownames(env.scores))
-env.scores[3,3] <- "Ca"
-env.scores[5,3] <- "K"
-env.scores[7,3] <- "P"
-env.scores[8,3] <- "Air temperature"
+env.scores[2,3] <- "Ca"
+env.scores[4,3] <- "K"
+env.scores[6,3] <- "P"
+env.scores[7,3] <- "Air temperature"
 
 # radial shift function
 rshift = function(r, theta, a=0.03, b=0.07) {
@@ -724,17 +731,17 @@ ggplot(NMDSscores, aes(x = NMDS1, y = NMDS2)) +
   geom_point(shape = 16, size = 5,  aes(color = air.temp)) +
   geom_segment(data = env.scores, aes(x = 0, xend = 1*NMDS1, y = 0, yend = 1*NMDS2), lineend = "round", arrow = arrow(length = unit(0.25, "cm")), color = "black", size = 1) +
   geom_text(data = env.scores, aes(x = xnew, y = ynew, label=env.variables), size = 4.5) +
-  scale_color_continuous(low = "yellow", high = "red") +
-  labs(color = "MTWM (°C)") +
+  scale_color_continuous(low = "yellow", high = "red", breaks = seq(24, 26.5, by = 1)) +
+  labs(color = "MAT (°C)") +
   theme_classic() +
   theme(axis.text = element_text(color = "black", size = 14), 
         axis.title = element_text(size = 16),
         panel.border = element_rect(fill=NA), 
-        legend.position = c(0.1,.825), 
+        legend.position = c(0.1,.18), 
         legend.background = element_rect(linetype="solid", color = "black", fill = "transparent"),
         panel.background = element_rect(fill='transparent'),
         plot.background = element_rect(fill='transparent', color=NA),) 
-
+#ggsave("NMDSsupp.pdf")
 
 ### Do a partial Mantel test to determine significance of environmental variables
 #First make rownames of plot characteristics df
@@ -747,10 +754,10 @@ plot_mantel$Plot <- NULL
 comm_dist <- vegdist(plot_mat, method="bray") 
 
 #make air temp and geo matrices
-temp_mat <- as.matrix(plot_mantel[,c(21)]) #21 is mtwm
+temp_mat <- as.matrix(plot_mantel[,c(21)]) #21 is mat
 temp_dist <- vegdist(temp_mat, method="bray")
 
-dist_mat <- as.matrix(plot_mantel[,c(7,8)]) #these are slope, lat and lon
+dist_mat <- as.matrix(plot_mantel[,c(7,8)]) #these are lat and lon
 dist_dist <- vegdist(dist_mat, method="euclidean")
 
 topo_mat <- as.matrix(plot_mantel[,c(2)]) #2 is slope
@@ -772,7 +779,7 @@ mantel(beta.sor, dist_dist, method="spearman", permutations=999)
 
 #Mantel test to test topography on community composition
 mantel(beta.sor, topo_dist, method="spearman", permutations=999)
-#p = 0.005
+#p = 0.003
 #r = 0.09
 
 #Partial Mantel test (controlling for geo distance and topography)
@@ -794,7 +801,7 @@ soil_dist2 <- vegdist(soil_mat2, method="euclidean")
 beta.div2 <- beta.pair(plot_mat_pa[c(1,4,6,9,13:25,32:35,37,40,41,46),], index.family="sorensen")
 beta.sor2 <- beta.div2[["beta.sor"]] #keeps only b-SOR
 
-temp_mat2 <- as.matrix(plot_mantel[c(1,4,6,9,13:25,32:35,37,40,41,46),c(21)]) #21 is mtwm
+temp_mat2 <- as.matrix(plot_mantel[c(1,4,6,9,13:25,32:35,37,40,41,46),c(21)]) #21 is mat
 temp_dist2 <- vegdist(temp_mat2, method="bray")
 
 #simple
@@ -808,7 +815,7 @@ geo_dist3 <- vegdist(geo_mat3, method="euclidean")
 
 #partial
 mantel.partial(beta.sor2, temp_dist2, geo_dist3, method="pearson", permutations=999)
-#MTWM is still significant
+#MAT is still significant
 rm(temp_mat2,temp_dist2,beta.div2,beta.sor2,geo_mat2, geo_dist2, geo_mat3, geo_dist3)
 
 
@@ -873,21 +880,32 @@ supp_tab_3$TM <- tnb_df$Tmax_95[match(supp_tab_3$Binomial, tnb_df$species)]
 m <- match(comp$Binomial, tnb_df$species)
 
 comp$Tmax <- tnb_df$Tmax_median[m]
-comp$Tmax <- ifelse(is.na(comp$Tmax), mean(tnb_df$Tmax_median), comp$Tmax)
-
 comp$Tmax_95 <- tnb_df$Tmax_95[m]
-comp$Tmax_95 <- ifelse(is.na(comp$Tmax_95), mean(tnb_df$Tmax_95), comp$Tmax_95)
-
 comp$Tult <- tnb_df$Tmax[m]
-comp$Tult <- ifelse(is.na(comp$Tult), mean(tnb_df$Tmax), comp$Tult)
-
 comp$MAT <- tnb_df$MATmedian[m]
+
+#remove occurrences that have NA in the Tmax_95 column to get rid of morphospecies. make a new df to do the analysis without morphospecies
+comp2 <- comp[!is.na(comp$Tmax_95),]
+
+#fill in missing values with means
+comp$Tmax <- ifelse(is.na(comp$Tmax), mean(tnb_df$Tmax_median), comp$Tmax)
+comp$Tmax_95 <- ifelse(is.na(comp$Tmax_95), mean(tnb_df$Tmax_95), comp$Tmax_95)
+comp$Tult <- ifelse(is.na(comp$Tult), mean(tnb_df$Tmax), comp$Tult)
 comp$MAT <- ifelse(is.na(comp$MAT), mean(tnb_df$MATmedian), comp$MAT)
 
 rm(m)
 
 #calculate basal area of each tree if weighting averages by basal area
-comp$ba <- (pi * (comp$DBH/2)^2)
+comp$DBH2 <- ifelse(is.na(comp$DBH2), 0, comp$DBH2)
+comp$DBH3 <- ifelse(is.na(comp$DBH3), 0, comp$DBH3)
+comp$DBH4 <- ifelse(is.na(comp$DBH4), 0, comp$DBH4)
+comp$DBH5 <- ifelse(is.na(comp$DBH5), 0, comp$DBH5)
+
+comp$ba <- (pi * (comp$DBH/2)^2) +
+  (pi * (comp$DBH2/2)^2) +
+  (pi * (comp$DBH3/2)^2) +
+  (pi * (comp$DBH4/2)^2) +
+  (pi * (comp$DBH5/2)^2)
 
 # summarize the previous thermal metrics for each plot
 plots <- plot_char$Plot
@@ -898,7 +916,7 @@ MAT <- rep(NA, length(plots))
   
 for (i in 1:length(plots)) {
   
-  subset <- comp %>%
+  subset <- comp2 %>% #use comp2 to remove morphospecies
     filter(Plot == plots[i])
   
   Tmax[[i]] <- mean(subset$Tmax)
@@ -927,19 +945,19 @@ plot(plot_char$air.temp, plot_char$Tult)
 m3 <- lm(Tult ~ air.temp, data=plot_char)
 summary(m3)
 
-plot(plot_char$tms_clim15_MAT, plot_char$MAT)
-m4 <- lm(MAT ~ tms_clim15_MAT, data=plot_char)
+plot(plot_char$air.temp, plot_char$MAT)
+m4 <- lm(MAT ~ air.temp, data=plot_char)
 summary(m4)
 
 #plot the results
 cts_plot <- ggplot(plot_char, aes(x = air.temp, y = CTS)) +
   stat_smooth(method=lm, fullrange = TRUE, color="black") +
   geom_point(size=4, shape=21, fill="gray25", color="black", alpha=.6) +
-  labs(x = "MTWM (°C)", y = "Community temperature score (°C)") +
-  annotate("text", x=39.5, y=33.1, label= bquote("R"^2~" = 0.19, p < 0.001"), size = 14/.pt) +
-  scale_x_continuous(limits = c(30,45)) +
-  scale_y_continuous(limits = c(32,36)) +
-  coord_cartesian(xlim=c(34,43.5),ylim=c(32.8,35.2)) +
+  labs(x = "MAT (°C)", y = "Community temperature score (°C)") +
+  annotate("text", x=25.5, y=33.1, label= bquote("R"^2~" = 0.20, p < 0.001"), size = 14/.pt) +
+  scale_x_continuous(breaks = seq(24, 26.5, by = 1)) +
+  scale_y_continuous(limits = c(32.6,35.2)) +
+  #coord_cartesian(xlim=c(24,28),ylim=c(32,35)) +
   theme_classic() +
   theme(axis.text = element_text(color="black", size = 14), 
         axis.title = element_text(size = 16),
@@ -951,13 +969,13 @@ cts_plot
 #ggsave("thermophilization.pdf")
 
 #make a plot with mean thermal tolerance and mean annual temp in the plots
-ggplot(plot_char, aes(x = tms_clim15_MAT, y = MAT)) +
+ggplot(plot_char, aes(x = air.temp, y = MAT)) +
   stat_smooth(method=lm, fullrange = TRUE, color="black") +
   geom_point(size=4, shape=21, fill="gray25", color="black", alpha=.6) +
   labs(x = "MAT (°C)", y = "Community mean thermal optimum (°C)") +
-  annotate("text", x=24.2, y=24.5, label= bquote("R"^2~" = 0.03, p = 0.16"), size = 14/.pt) +
-  scale_x_continuous(limits = c(23.5,27)) +
-  scale_y_continuous(limits = c(24.2,26.5)) +
+  annotate("text", x=25.5, y=24.5, label= bquote("R"^2~" = 0.03, p = 0.16"), size = 14/.pt) +
+  #scale_x_continuous(limits = c(23.5,27)) +
+  #scale_y_continuous(limits = c(24.2,26.5)) +
   #coord_cartesian(xlim=c(34,43.5),ylim=c(32.8,35.2)) +
   theme_classic() +
   theme(axis.text = element_text(color="black", size = 14), 
@@ -965,6 +983,10 @@ ggplot(plot_char, aes(x = tms_clim15_MAT, y = MAT)) +
         panel.border = element_rect(fill=NA),
         panel.background = element_rect(fill='transparent'),
         plot.background = element_rect(fill='transparent', color=NA))
+
+
+
+
 
 ### Now calculate species thermal optima based on occurrences within plots at the Boiling River (mean temp)
 # and compare to thermal optima based on regional occurrence records 
@@ -1001,7 +1023,10 @@ ggplot(data=tnb_df, aes(x=Tmax_95, y=br.topt)) +
   stat_smooth(method=lm, fullrange = TRUE, color="black") +
   geom_point(size=4, shape=21, fill="gray25", color="black", alpha=.6) +
   labs(x = "Thermal maximum (°C)", y = "Thermal optimum at the Boiling River (°C)") +
-  annotate("text", x=36, y=37, label= bquote("R"^2~" = 0.03, p < 0.05"), size = 12/.pt) +
+  annotate("text", x=36, y=26, label= bquote("R"^2~" = 0.03, p < 0.05"), size = 12/.pt) +
   theme_classic()
+  
+
+
   
 
