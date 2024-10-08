@@ -1,10 +1,10 @@
 ## BoilingRiver_ThermalGradient_TreeDiversity
 
-__Title:__ Warming reduces diversity and alters composition of trees in the Amazon
+__Title:__ Hotter temperatures reduce the diversity and alter the composition of woody plants in an Amazonian forest
 
-__Authors:__ Riley P. Fortier*, Alyssa T. Kullberg*, Lauren Coombs, Roy Soria Ahuanari, Andrés Ruzo, Kenneth J. Feeley
+__Authors:__ Riley P. Fortier*, Alyssa T. Kullberg*, Roy D. Soria Ahuanari, Lauren Coombs, Andrés Ruzo, Kenneth J. Feeley
 
-__Year:__ 2023
+__Year:__ 2024
 
 
 \* Please contact Riley P. Fortier (fortier.riley@gmail.com) with any questions regarding tree plot or soil nutrient data.
@@ -12,7 +12,7 @@ __Year:__ 2023
 \* Please contact Alyssa T. Kullberg (alyssa.kullberg@gmail.com) with any questions regarding air temperature, soil temperature, or relative humidity data.
 
 
-### This repository contains datasets and scripts associated with Fortier et al. (2023), including:
+### This repository contains datasets and scripts associated with Fortier et al. (2024), including:
 
 
 ### Time-series air temperature, soil temperature, and relative humidity datasets
@@ -29,7 +29,6 @@ __Year:__ 2023
 
 
 ### Tree diversity data and analyses from 70 3-m radius plots
-* __Boiling_River_temp_RH_datasets_README.docx__
 * __Plot_chars.csv__
 * __BR_plot_data.xlsx__
 * __DETERMINACIONES BOTANICAS - RIO HIRVIENTE.xlsx__
