@@ -1,14 +1,22 @@
 
 ## Create linear models to predict mean annual temperature (MAT) and maximum temperature of the warmest month (MTWM) continuously across the Boiling River forest using remotely-sensed Landsat 9 imagery
+## Then, extract MAT and MTWM for each plot location
 
 ## Prepared by: Alyssa T. Kullberg
-## Last updated: April 26, 2023
-## R version 4.2.2
+## Last updated: October 14, 2024
+## R version 4.3.1
 
+set.seed(565)
 
 ## Load libraries
 library(raster)
-library(stringr)
+library(sp)
+library(caret)
+library(regclass)
+library(ncf)
+library(car)
+library(vegan)
+library(sf)
 
 
 ## Load Landsat raster data (can be downloaded from USGS EarthExplorer)
@@ -23,6 +31,9 @@ lst <- crop(lst, ext)
 ## Load temperature data summarized into climate metrics by sensor type (file created in climate_metrics_clean.R)
 tms.clim15 <- read.csv("../Data/Made_in_R/tms_clim15_clean.csv")
 
+
+## Remove two hilltop loggers to keep only those that are in the riparian forest
+tms.clim15 <- subset(tms.clim15, Logger.ID != "T94223054" & Logger.ID != "T94223055")
 
 
 #######
@@ -42,50 +53,57 @@ points.utm <- spTransform(points, CRS("+proj=utm +zone=18 ellps=WGS84 +datum=WGS
 
 ## Extract LST values based on UTM points from each dataframe
 values <- extract(lst, points.utm)
-  
+
 
 ## Attach LST values to each climate metric dataframe in the list
 tms.clim15$LST <- values
 LST <- unlist(tms.clim15$LST)
+NDVI <- unlist(tms.clim15$NDVI)
+Dist_to_river <- unlist(tms.clim15$Dist_to_river)
+long <- unlist(tms.clim15$Longitude)
 
 
-## Create list of variable names to create models with in for-loop
-var.names <- c("MAT_day", "Tmax")
+names(lst) <- c("LST")
 
 
-## Prepare empty lists to store model results from for-loop
-raster.maps <- list()
-model.lm.results <- list()
+## Predict MAT (and MTWM) across study area and extract MAT (and MTWM) for each plot location
+model.lm.mat <- lm(MAT ~ LST, data = tms.clim15)
+model.sum.mat <- summary(model.lm.mat)
+
+model.lm.mtwm <- lm(Tmax ~ LST, data = tms.clim15)
+model.sum.mtwm <- summary(model.lm.mtwm)
 
 
-## Run for-loop to create linear models for MAT (MAT_day) and MTWM (Tmax) to predict these variables across the Boiling River forest, using LST as the predictor
-for(j in 1:length(var.names)){
-    y.var <- as.numeric( unlist( tms.clim15[ names( tms.clim15) == var.names[j]]))
+## Predict climate metric of interest across LST (continuous surface) according to linear model
+raster.predictions.mat <- predict(object = lst, model = model.lm.mat)
+raster.predictions.mtwm <- predict(object = lst, model = model.lm.mtwm)
 
-    ## Fit linear model
-    model.lm <- lm(y.var ~ LST)
-    
-    ## Save LLS model results into lists, get R2 of model from these
-    model.lm.results[[j]] <- summary(model.lm)
-    names(model.lm.results) <- var.names[[j]]
-    
-    ## Predict climate metric of interest across LST (continuous surface) according to RF model
-    names(lst) <- c("LST")
-    raster.predictions <- predict(object = lst, model = model.lm)
-    
-    ## Write each raster map to a list
-    raster.maps[[j]] <- raster.predictions
-    names(raster.maps[[j]]) <- var.names[[j]]
-    
-    ## Write each raster map as a file, named after the sensor type
-    writeRaster(raster.predictions, paste0("../Data/Made_in_R/Climate_maps_clean/", var.names[[j]], ".tif"),
-                overwrite = TRUE)
-    
-}
+## Write each raster map as a file
+writeRaster(raster.predictions.mat, paste0("../Data/Made_in_R/Climate_maps_rehash/MAT.tif"),
+            overwrite = TRUE)
+writeRaster(raster.predictions.mat, paste0("../Data/Made_in_R/Climate_maps_rehash/MTWM.tif"),
+            overwrite = TRUE)
 
-## View linear model results to report statistics
-# MAT ~ LST
-model.lm.results[[1]]
 
-# MTWM ~ LST
-model.lm.results[[2]]
+####################################################
+####################################################
+
+# Load plot locations
+plots <- read.csv("../Data/BR_Plot_Locations.csv")
+
+# Rename latitude and longitude from occ_all_3 into new dataframe: coords
+lats <- plots$lat
+lons <- plots$lon
+coords <- data.frame(x=lons, y=lats)
+
+# Set lat and long onto a coordinate system
+points <- SpatialPoints(coords, proj4string=CRS("+proj=longlat +datum=WGS84 +no_defs"), bbox=NULL)
+points <- spTransform(points, CRS("+proj=utm +zone=18 +datum=WGS84 +units=m +no_defs"))
+
+values.mat <- raster::extract(raster.predictions.mat, points)
+values.mtwm <- raster::extract(raster.predictions.mtwm, points)
+
+plots$MAT <- values.mat
+plots$MTWM <- values.mtwm
+
+#write.csv(plots, "../Data/Made_in_R/plot_locations_temp_model.csv")
