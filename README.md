@@ -17,15 +17,14 @@ __Year:__ 2024
 
 ### Time-series air temperature, soil temperature, and relative humidity datasets
 * __Boiling_River_temp_RH_datasets_README.docx__
-* __data_clean.csv__
+* __tms_data_clean.csv__
 * __hobo_data_clean.csv__
 * __climate_metrics_clean.R__ 
-   + calculate climate metrics (for TMS loggers at the Boiling River and for other forest sites) like mean annual temperature (MAT) and maximum temperature of the warmest month (MTWM)
-   + plot climate metrics, plot temperature regimes
-   + plot time-series temperature and humidity data
+   + calculate climate metrics (for TMS loggers at the Boiling River and for other forest sites) like mean annual temperature (MAT) and maximum temperature of the warmest month (MTWM, 'maximum temperature' in the manuscript)
    + create and save tms_clim15_clean.csv, used in temp_model_clean.R for response variables (MAT and MTWM)
 * __temp_model_clean.R__ 
   + create linear models to predict MAT and MTWM across the Boiling River forest using Landsat land surface temperature as the predictor
+  + extract the MAT and MTWM of each plot
 
 
 ### Tree diversity data and analyses from 70 3-m radius plots
